@@ -7,15 +7,16 @@ import { resolve } from "path/posix"
 dotenv.config({path: resolve(__dirname, '.env')})
 
 //connect to db and handle requests
- const app = express()
+const app = express()
 MongoClient.connect(process.env.MONGOSTRING as string)
     .then(client => {
         const db = client.db("displayDB")
         const col = db.collection("storeCollection")
         console.log(`${col.dbName}`)
         
-        //request for adding a store
+        //post request for adding a store to db
         app.post("/addStore", async (req, res) => {
+            //TODO: strict error handling
             const store = req.query.s
             const inv = parseInt(req.query.i as string)
             const loc = req.query.l
@@ -30,7 +31,9 @@ MongoClient.connect(process.env.MONGOSTRING as string)
             res.send(out.insertedId)
         })
 
+        //post request for updating store inventory
         app.post("/updateStore", (req, res) =>{
+            //TODO: strict error handling
             const id = new ObjectId(req.query.id as string)
             const inv = parseInt(req.query.inv as string)
 
@@ -38,14 +41,16 @@ MongoClient.connect(process.env.MONGOSTRING as string)
             res.send("success")
         })
 
+        //(untested) request for getting stores
         app.get("/getStores", async (_,res)=>{ 
+            //TODO: test and error handling
             const arr = await col.find().toArray()
             console.log(arr)
             res.send("good")
         })
-    })
+})
 
-
+//server listens on port from env file
 app.listen(process.env.PORT, () =>{
     console.log(`listening on port ${process.env.PORT}`)
 })
